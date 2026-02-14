@@ -1,0 +1,19 @@
+###
+//Получение юзера
+GET http://localhost:3000/api/user
+Content-Type: application/json
+
+###
+//Создание юзера
+POST http://localhost:3000/api/user
+Content-Type: application/json
+
+###
+//Обновление юзера
+PUT http://localhost:3000/api/user
+Content-Type: application/json
+
+###
+//Удаление юзера
+DELETE http://localhost:3000/api/user
+Content-Type: application/json
