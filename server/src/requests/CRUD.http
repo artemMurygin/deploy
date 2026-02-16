@@ -1,0 +1,137 @@
+@baseUrl = http://localhost:3000
+@token = YOUR_JWT_TOKEN_HERE
+
+############################################################
+### BOOKS CRUD
+############################################################
+
+### 1️⃣ Получить список книг (публично)
+GET {{baseUrl}}/books
+
+###
+
+### 2️⃣ Получить список книг с поиском и пагинацией
+GET {{baseUrl}}/books?q=city&page=1&limit=10&sort=new
+
+###
+
+### 3️⃣ Получить только свои книги (нужен токен)
+GET {{baseUrl}}/books?onlyMy=true
+Authorization: Bearer {{token}}
+
+###
+
+### 4️⃣ Получить книгу по id (публично если PUBLISHED)
+GET {{baseUrl}}/books/1
+
+###
+
+### 5️⃣ Создать книгу (только AUTHOR / ADMIN)
+POST {{baseUrl}}/books
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "My New Book",
+  "description": "Some description here...",
+  "language": "en",
+  "publish_year": 2024,
+  "pages": 250,
+  "status": "DRAFT",
+  "genres": [
+    1
+  ],
+  "tags": [
+    1,
+    2
+  ]
+}
+
+###
+
+### 6️⃣ Обновить книгу (только владелец или ADMIN)
+PATCH {{baseUrl}}/books/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Book Title",
+  "status": "PUBLISHED",
+  "tags": [
+    1,
+    3
+  ]
+}
+
+###
+
+### 7️⃣ Удалить книгу (только владелец или ADMIN)
+DELETE {{baseUrl}}/books/1
+Authorization: Bearer {{token}}
+
+############################################################
+### ДОПОЛНИТЕЛЬНЫЕ ПРОВЕРКИ
+############################################################
+
+### Попытка создать книгу без токена (должно быть 401)
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "title": "Unauthorized Book"
+}
+
+###
+
+### Попытка получить DRAFT книгу без токена (должно быть 403 или 404)
+GET {{baseUrl}}/books/3
+
+###
+
+############################################################
+### GENRES / TAGS (минимум)
+############################################################
+
+GET {{baseUrl}}/genres
+
+###
+
+GET {{baseUrl}}/tags
+
+###
+
+GET {{baseUrl}}/tags?q=cyb
+
+############################################################
+### FAVORITES (минимум)
+############################################################
+
+POST {{baseUrl}}/books/1/favorite
+Authorization: Bearer {{token}}
+
+###
+
+DELETE {{baseUrl}}/books/1/favorite
+Authorization: Bearer {{token}}
+
+###
+
+GET {{baseUrl}}/me/favorites?page=1&limit=20
+Authorization: Bearer {{token}}
+
+############################################################
+### REVIEWS (минимум)
+############################################################
+
+GET {{baseUrl}}/books/1/reviews?page=1&limit=10
+
+###
+
+PUT {{baseUrl}}/books/1/review
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "text": "Loved it!"
+}

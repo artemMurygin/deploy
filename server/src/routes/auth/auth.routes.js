@@ -12,7 +12,7 @@ router.get('/', verifyAccessToken, (req, res) => {
 })
 
 router.post('/registration', async (req, res) => {
-    const {name, email, password, role = 1} = req.body;
+    const {name, email, password, role = 'USER'} = req.body;
 
     if (!(name && email && password && role)) {
         return res.status(409).json({

@@ -1,56 +1,71 @@
 'use strict';
 const bcrypt = require('bcrypt');
 
-const { Model } = require('sequelize');
+const {Model} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Users extends Model {
-    static associate() {
+    class Users extends Model {
+        static associate(models) {
+            Users.hasMany(models.Books, {foreignKey: 'author_id', as: 'books'});
+            Users.belongsToMany(models.Books, {
+                through: models.Favorites,
+                foreignKey: 'user_id',
+                otherKey: 'book_id',
+                as: 'favoriteBooks'
+            });
+
+            Users.hasMany(models.Reviews, {foreignKey: 'user_id', as: 'reviews'});
+
+        }
+
+        toJSON() {
+            const attributes = {...this.get()};
+            delete attributes.createdAt;
+            delete attributes.updatedAt;
+            delete attributes.password;
+            return attributes;
+        }
     }
 
-    toJSON() {
-      const attributes = { ...this.get() };
-      delete attributes.createdAt;
-      delete attributes.updatedAt;
-      delete attributes.password;
-      return attributes;
-    }
-  }
-  Users.init(
-    {
-      name: DataTypes.STRING,
-      email: DataTypes.STRING,
-      password: DataTypes.STRING,
-      role: DataTypes.STRING,
-    },
-    {
-      sequelize,
-      modelName: 'Users',
-      defaultScope: {
-        attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
-      },
-      scopes: {
-        withPassword: {
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
+    Users.init(
+        {
+            name: DataTypes.STRING,
+            email: DataTypes.STRING,
+            password: DataTypes.STRING,
+            role: {
+                type: DataTypes.ENUM('USER', 'AUTHOR', 'ADMIN'),
+                allowNull: false,
+                defaultValue: 'USER'
+            }
         },
-      },
-    },
-  );
-
-  Users.beforeCreate(async (user) => {
-    user.password = await bcrypt.hash(
-      user.password,
-      parseInt(process.env.BCRYPT_ROUNDS) || 10,
+        {
+            sequelize,
+            modelName: 'Users',
+            defaultScope: {
+                attributes: {exclude: ['password', 'createdAt', 'updatedAt']}
+            },
+            scopes: {
+                withPassword: {
+                    attributes: {exclude: ['createdAt', 'updatedAt']}
+                }
+            }
+        }
     );
-  });
 
-  Users.beforeUpdate(async (user) => {
-    if (user.changed('password')) {
-      user.password = await bcrypt.hash(
-        user.password,
-        parseInt(process.env.BCRYPT_ROUNDS) || 10,
-      );
-    }
-  });
+    Users.beforeCreate(async (user) => {
+        user.password = await bcrypt.hash(
+            user.password,
+            parseInt(process.env.BCRYPT_ROUNDS) || 10
+        );
+    });
 
-  return Users;
+    Users.beforeUpdate(async (user) => {
+        if (user.changed('password')) {
+            user.password = await bcrypt.hash(
+                user.password,
+                parseInt(process.env.BCRYPT_ROUNDS) || 10
+            );
+        }
+    });
+
+    return Users;
 };
