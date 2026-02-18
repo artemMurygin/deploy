@@ -19,8 +19,8 @@ module.exports = (sequelize, DataTypes) => {
 
         toJSON() {
             const attributes = {...this.get()};
-            delete attributes.createdAt;
-            delete attributes.updatedAt;
+            delete attributes.created_at;
+            delete attributes.updated_at;
             delete attributes.password;
             return attributes;
         }
@@ -40,6 +40,8 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: 'Users',
+            createdAt: 'created_at',
+            updatedAt: 'updated_at',
             defaultScope: {
                 attributes: {exclude: ['password', 'createdAt', 'updatedAt']}
             },

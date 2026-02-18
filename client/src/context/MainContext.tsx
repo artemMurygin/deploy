@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { createContext, useEffect, useState } from 'react'
-import $api from '../../shared/axios.instance.ts';
 import type { MainContextType, User } from '../types/Types.ts';
+import $api from '../../shared/axios.instance.ts';
 
 
 export const MainContext = createContext<MainContextType>(
-    {} as MainContextType
+    { user: undefined, setUser: () => {} }
 )
 
 export const MainProvider = ({ children }: { children: React.ReactNode }) => {
@@ -13,10 +13,14 @@ export const MainProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(true);
 
+    function handler(user: User | undefined) {
+        setUser(user)
+    }
+
     useEffect(() => {
         $api('/auth')
             .then((response) => {
-                setUser(response.data.user);
+                handler(response.data.user);
                 console.log(response.data.user)
             })
             .catch((error) => {
@@ -27,14 +31,18 @@ export const MainProvider = ({ children }: { children: React.ReactNode }) => {
             });
     }, []);
 
+
+    console.log('render Main Provider')
+
     if (isLoading) {
         return <div>Загружаем страницу...</div>;
     }
 
+
     return (
         <MainContext.Provider value={{
             user,
-            setUser
+            setUser: handler
         }}
         >
             {children}

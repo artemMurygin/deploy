@@ -1,25 +1,16 @@
+import { Button } from '@/components/ui/button.tsx';
 import { useContext } from 'react';
-import { MainContext } from './context/MainContext.tsx';
+import { MainContext } from '@/context/MainContext.tsx';
 
 
 function App() {
-    const { user } = useContext(MainContext)
-
-    if (!user) {
-        return (
-            <div>
-                Ошибка, пользователя нет :(
-            </div>
-        )
-    }
-
+    const { setUser } = useContext(MainContext)
     return (
-        <>
-            <div>
-                App Запущен, привет, {user.name}!
-            </div>
-        </>
+        <div className="flex min-h-svh flex-col items-center justify-center">
+            <Button onClick={() => {setUser(undefined)}}>Click me</Button>
+        </div>
     )
 }
 
 export default App
+

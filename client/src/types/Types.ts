@@ -1,5 +1,3 @@
-import type {Dispatch, SetStateAction} from 'react';
-
 export type User = {
     name: string;
     email: string;
@@ -8,5 +6,6 @@ export type User = {
 
 export type MainContextType = {
     user: User | undefined,
-    setUser: Dispatch<SetStateAction<User | undefined>>,
+    setUser: (user: User | undefined) => void,
 }
+

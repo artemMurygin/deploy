@@ -1,20 +1,45 @@
 import './Registration.scss'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import $api, { setAccessToken } from '../../../shared/axios.instance';
 import { MainContext } from '../../context/MainContext.tsx';
-import * as React from 'react';
 import { useContext } from 'react';
+import * as yup from 'yup';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.tsx';
+import { Field, FieldError, FieldGroup } from '@/components/ui/field.tsx';
+import { Controller, useForm } from 'react-hook-form';
+import { Label } from '@/components/ui/label.tsx';
+import { Input } from '@/components/ui/input.tsx';
+import { Button } from '@/components/ui/button.tsx';
+import { yupResolver } from '@hookform/resolvers/yup';
+
+
+const schema = yup.object({
+    name: yup.string()
+             .required('Поле обязательно для заполнения'),
+    email: yup.string()
+              .email('Введите почту корректно')
+              .required('Поле обязательно для заполнения'),
+    password: yup.string()
+                 .required('Поле обязательно для заполнения')
+})
+
+type FormData = yup.InferType<typeof schema>
 
 
 const Registration = () => {
     const navigate = useNavigate()
     const { setUser } = useContext(MainContext)
 
+    const { handleSubmit, control } = useForm({
+        mode: 'onBlur',
+        delayError: 200,
+        disabled: false,
+        resolver: yupResolver(schema)
+    });
 
-    const handler: React.SubmitEventHandler<HTMLFormElement> = async (event) => {
-        event.preventDefault()
 
-        const { name, email, password } = Object.fromEntries(new FormData(event.target))
+    const handler = async (fd: FormData) => {
+        const { name, email, password } = fd
 
         try {
             const { status, data } = await $api.post('/auth/registration', { name, email, password })
@@ -29,86 +54,69 @@ const Registration = () => {
         }
     }
     return (
-        <div className="registration">
-            <div className="registration__inner">
-                <div className="registration__top">
-                    <div className="registration__logo" />
-                    <h1 className="registration__header">Добро пожаловать!</h1>
-                    <p className="registration__decription">Создайте Ваш аккаунт</p>
-                </div>
-                <div className="registration__card">
-                    <form
-                        className="registration__form"
-                        onSubmit={handler}>
-                        <label
-                            className="registration__form-label"
-                            htmlFor="phone"
-                        >
-                            Email
-                        </label>
-                        <div className="registration__form-input">
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="artem@mail.ru"
-                                required
-                            />
-                        </div>
-                        <label
-                            className="registration__form-label"
-                            htmlFor="name"
-                        >
-                            Имя
-                        </label>
-                        <div className="registration__form-input">
-                            <input
-                                id="name"
+        <div className="container">
+            <Card className={'login'}>
+                <form onSubmit={handleSubmit(handler)}>
+                    <CardHeader>
+                        <CardTitle>Зарегистрироваться</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FieldGroup>
+                            <Controller
                                 name="name"
-                                type="text"
-                                placeholder="Артем"
-                                required
+                                control={control}
+                                render={({ field: { name }, field, fieldState: { invalid, error } }) => (
+                                    <Field>
+                                        <Label htmlFor={name}>Введите имя</Label>
+                                        <Input
+                                            {...field}
+                                            id={name}
+                                            placeholder={'Ваше имя'}
+                                            aria-invalid={invalid}
+                                        />
+                                        {invalid && <FieldError errors={[error]} />}
+                                    </Field>
+                                )}
                             />
-                        </div>
-                        <label
-                            className="registration__form-label"
-                            htmlFor="role"
-                        >
-                            Кто ты?
-                        </label>
-                        <div className="registration__form-input">
-                            <select name="role" id="role">Кто ты такой?
-                                <option value="client">Клиент</option>
-                                <option value="employee">Сотрудник</option>
-                            </select>
-                        </div>
-                        <label
-                            className="registration__form-label"
-                            htmlFor="password"
-                        >
-                            Пароль
-                        </label>
-                        <div className="registration__form-input">
-                            <input
-                                id="password"
+                            <Controller
+                                name="email"
+                                control={control}
+                                render={({ field: { name }, field, fieldState: { invalid, error } }) => (
+                                    <Field>
+                                        <Label htmlFor={name}>Введите e-mail</Label>
+                                        <Input
+                                            {...field}
+                                            id={name}
+                                            placeholder={'username@pochta.ru'}
+                                            aria-invalid={invalid}
+                                        />
+                                        {invalid && <FieldError errors={[error]} />}
+                                    </Field>
+                                )}
+                            />
+                            <Controller
                                 name="password"
-                                type="password"
-                                placeholder="********"
-                                required
+                                control={control}
+                                render={({ field: { name }, field, fieldState: { invalid, error } }) => (
+                                    <Field>
+                                        <Label htmlFor={name}>Введите пароль</Label>
+                                        <Input
+                                            {...field}
+                                            id={name}
+                                            placeholder={'Ваш пароль'}
+                                            aria-invalid={invalid}
+                                        />
+                                        {invalid && <FieldError errors={[error]} />}
+                                    </Field>
+                                )}
                             />
-                        </div>
-                        <button type="submit">Зарегистрироваться</button>
-                    </form>
-                </div>
-                <div className="registration__bottom">
-                    <p>
-                        Есть аккаунт?
-                        <span>
-              <Link to="/login">Войти</Link>
-            </span>
-                    </p>
-                </div>
-            </div>
+                        </FieldGroup>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit">Войти</Button>
+                    </CardFooter>
+                </form>
+            </Card>
         </div>
     )
 }

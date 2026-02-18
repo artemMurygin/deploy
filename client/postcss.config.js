@@ -16,6 +16,6 @@ export default ({ env }) => {
   }
 
   return {
-    plugin,
+    plugins: plugin,
   }
 }
