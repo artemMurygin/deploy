@@ -1,9 +1,9 @@
 import './Login.scss'
 import { useNavigate } from 'react-router-dom'
-import $api, { setAccessToken } from '../../../shared/axios.instance';
-import { MainContext } from '../../context/MainContext.tsx';
-import { useContext } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useAppDispatch } from '@/redux/store.ts';
+import { userLoginThunk } from '@/redux/user.slice.ts';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup } from '@/components/ui/field'
@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { Controller, useForm } from 'react-hook-form';
-import * as yup from 'yup';
 
 
 const schema = yup.object({
@@ -24,31 +23,28 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>
 
-
 const Login = () => {
     const navigate = useNavigate()
-    const { setUser } = useContext(MainContext)
-
+    const dispatch = useAppDispatch()
 
     const { handleSubmit, control } = useForm({
         mode: 'onBlur',
         delayError: 200,
         disabled: false,
-        resolver: yupResolver(schema)
+        resolver: yupResolver(schema),
+        defaultValues: {
+            email: '',
+            password: ''
+        }
     });
 
     const handler = async (fd: FormData) => {
-        const { email, password } = fd
-
         try {
-            const { status, data } = await $api.post('/auth/login', { email, password })
-            console.log(data)
-            if (status === 200) {
-                console.log('token', data.accessToken)
-                setAccessToken(data.accessToken)
-                setUser(data.user)
-                navigate('/')
-            }
+            await dispatch(
+                userLoginThunk(fd)
+            )
+                .unwrap()
+            navigate('/')
         } catch (error) {
             console.log(error)
         }

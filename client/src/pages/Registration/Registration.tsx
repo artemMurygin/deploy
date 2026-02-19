@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label.tsx';
 import { Input } from '@/components/ui/input.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useAppDispatch } from '@/redux/store.ts';
+import { userRegisterThunk } from '../../redux/user.slice.ts'
 
 
 const schema = yup.object({
@@ -28,13 +30,18 @@ type FormData = yup.InferType<typeof schema>
 
 const Registration = () => {
     const navigate = useNavigate()
-    const { setUser } = useContext(MainContext)
+    const dispatch = useAppDispatch()
 
     const { handleSubmit, control } = useForm({
         mode: 'onBlur',
         delayError: 200,
         disabled: false,
-        resolver: yupResolver(schema)
+        resolver: yupResolver(schema),
+        defaultValues: {
+            email: '',
+            password: '',
+            name: ''
+        }
     });
 
 
@@ -42,13 +49,11 @@ const Registration = () => {
         const { name, email, password } = fd
 
         try {
-            const { status, data } = await $api.post('/auth/registration', { name, email, password })
-            console.log(status)
-            if (status === 200) {
-                setAccessToken(data.accessToken)
-                setUser(data.user)
-                navigate('/')
-            }
+            await dispatch(
+                userRegisterThunk({ name, email, password })
+            )
+                .unwrap()
+            navigate('/')
         } catch (error) {
             console.log(error)
         }

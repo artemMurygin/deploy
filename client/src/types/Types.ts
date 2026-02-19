@@ -1,7 +1,13 @@
 export type User = {
-    name: string;
-    email: string;
-    role: number
+    name: string | undefined;
+    email: string | undefined;
+    role: string | undefined
+}
+
+export type UserState = {
+    isLoading: boolean
+    error?: string | null
+    user?: User
 }
 
 export type MainContextType = {

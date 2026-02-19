@@ -1,13 +1,18 @@
 import { Button } from '@/components/ui/button.tsx';
-import { useContext } from 'react';
-import { MainContext } from '@/context/MainContext.tsx';
+import { useAppDispatch } from '@/redux/store.ts';
+import { userLogoutThunk } from '@/redux/user.slice.ts';
 
 
 function App() {
-    const { setUser } = useContext(MainContext)
+    const dispatch = useAppDispatch()
+
+    const handler = () => {
+        dispatch(userLogoutThunk())
+    }
+
     return (
         <div className="flex min-h-svh flex-col items-center justify-center">
-            <Button onClick={() => {setUser(undefined)}}>Click me</Button>
+            <Button onClick={() => {handler()}}>Click me</Button>
         </div>
     )
 }

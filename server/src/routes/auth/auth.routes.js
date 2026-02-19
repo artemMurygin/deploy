@@ -8,7 +8,7 @@ const verifyAccessToken = require('../../middleware/verifyAccessToken')
 
 router.get('/', verifyAccessToken, (req, res) => {
     const {user} = res.locals
-    res.json({message: 'OK', user})
+    res.json({message: 'Авторизация успешна', user})
 })
 
 router.post('/registration', async (req, res) => {
@@ -37,6 +37,7 @@ router.post('/registration', async (req, res) => {
         res
             .cookie('refreshToken', refreshToken, cookieConfig)
             .json({
+                message: 'Регистрация успешна',
                 user,
                 accessToken
             })
@@ -69,6 +70,8 @@ router.post('/login', async (req, res) => {
             res.status(400).json({message: 'Неверный пароль'})
             return
         }
+
+        delete user.password
 
         const {accessToken, refreshToken} = createToken({user})
 
