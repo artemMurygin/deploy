@@ -1,4 +1,5 @@
 export type User = {
+    id?: number;
     name: string | undefined;
     email: string | undefined;
     role: string | undefined
@@ -14,4 +15,3 @@ export type MainContextType = {
     user: User | undefined,
     setUser: (user: User | undefined) => void,
 }
-

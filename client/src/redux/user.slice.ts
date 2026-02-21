@@ -4,8 +4,9 @@ import $api, { setAccessToken } from '../../shared/axios.instance.ts';
 import type { AxiosError } from 'axios';
 
 
-type registrationInputType = { email: string, name: string, password: string }
+type registrationInputType = { email: string, name: string, password: string, role: 'USER' | 'AUTHOR' }
 type loginInputType = { email: string, password: string }
+type updateProfileInputType = { name?: string, password?: string }
 type rejected = { rejectValue: string }
 
 const initialState: UserState = {
@@ -14,9 +15,8 @@ const initialState: UserState = {
 
 export const userAuthCheck = createAsyncThunk<User, void, rejected>('/auth', async (_, { rejectWithValue }) => {
     try {
-        const { data: user } = await $api('/auth')
-        console.log('dsf')
-        return user
+        const { data } = await $api<{ message: string; user: User }>('/auth')
+        return data.user
     } catch (error) {
         const err = error as AxiosError<{ message: string }>
         return rejectWithValue(err.response?.data.message ?? 'Register failed')
@@ -55,6 +55,17 @@ export const userLogoutThunk = createAsyncThunk<void, void, rejected>('/logout',
     }
 })
 
+export const userUpdateProfileThunk = createAsyncThunk<User, updateProfileInputType, rejected>('/profile/update', async (profileData, { rejectWithValue }) => {
+    try {
+        const { data: { user, accessToken } } = await $api.patch('/auth/profile', profileData)
+        setAccessToken(accessToken)
+        return user
+    } catch (error) {
+        const err = error as AxiosError<{ message: string }>
+        return rejectWithValue(err.response?.data.message ?? 'Profile update failed')
+    }
+})
+
 const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -74,7 +85,7 @@ const userSlice = createSlice({
             })
 
             .addCase(userAuthCheck.fulfilled, (state, action) => {
-                state.user = action.payload.user
+                state.user = action.payload
                 state.isLoading = false
             })
             .addCase(userAuthCheck.rejected, (state) => {
@@ -92,8 +103,10 @@ const userSlice = createSlice({
             .addCase(userLogoutThunk.fulfilled, (state) => {
                 state.user = undefined
             })
+            .addCase(userUpdateProfileThunk.fulfilled, (state, action) => {
+                state.user = action.payload
+            })
     }
 })
 
 export default userSlice.reducer
-

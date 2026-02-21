@@ -90,5 +90,56 @@ router.post('/logout', (req, res) => {
     res.clearCookie('refreshToken').json({message: 'OK'})
 })
 
+router.patch('/profile', verifyAccessToken, async (req, res) => {
+    const { user: authUser } = res.locals;
+    const { name, password } = req.body;
+
+    const patch = {};
+
+    if (typeof name === 'string') {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            return res.status(400).json({ message: 'Имя не может быть пустым' });
+        }
+        patch.name = trimmedName;
+    }
+
+    if (typeof password === 'string') {
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Пароль должен быть не короче 6 символов' });
+        }
+        patch.password = password;
+    }
+
+    if (!Object.keys(patch).length) {
+        return res.status(400).json({ message: 'Нет данных для обновления' });
+    }
+
+    try {
+        const user = await Users.findByPk(authUser.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        await user.update(patch);
+
+        const safeUser = user.toJSON();
+        const { accessToken, refreshToken } = createToken({ user: safeUser });
+
+        res
+            .status(200)
+            .cookie('refreshToken', refreshToken, cookieConfig)
+            .json({
+                message: 'Профиль обновлен',
+                user: safeUser,
+                accessToken
+            });
+    } catch (error) {
+        console.log('Упал эндпоинт /profile', error);
+        res.status(500).json({ message: 'Упал эндпоинт /profile' });
+    }
+})
+
 
 module.exports = router;

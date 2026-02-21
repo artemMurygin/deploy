@@ -1,8 +1,5 @@
 import './Registration.scss'
 import { useNavigate } from 'react-router-dom'
-import $api, { setAccessToken } from '../../../shared/axios.instance';
-import { MainContext } from '../../context/MainContext.tsx';
-import { useContext } from 'react';
 import * as yup from 'yup';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card.tsx';
 import { Field, FieldError, FieldGroup } from '@/components/ui/field.tsx';
@@ -22,7 +19,10 @@ const schema = yup.object({
               .email('Введите почту корректно')
               .required('Поле обязательно для заполнения'),
     password: yup.string()
-                 .required('Поле обязательно для заполнения')
+                 .required('Поле обязательно для заполнения'),
+    role: yup.string()
+             .oneOf(['USER', 'AUTHOR'], 'Выберите роль')
+             .required('Поле обязательно для заполнения')
 })
 
 type FormData = yup.InferType<typeof schema>
@@ -32,7 +32,7 @@ const Registration = () => {
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
 
-    const { handleSubmit, control } = useForm({
+    const { handleSubmit, control } = useForm<FormData>({
         mode: 'onBlur',
         delayError: 200,
         disabled: false,
@@ -40,17 +40,18 @@ const Registration = () => {
         defaultValues: {
             email: '',
             password: '',
-            name: ''
+            name: '',
+            role: 'USER'
         }
     });
 
 
     const handler = async (fd: FormData) => {
-        const { name, email, password } = fd
+        const { name, email, password, role } = fd
 
         try {
             await dispatch(
-                userRegisterThunk({ name, email, password })
+                userRegisterThunk({ name, email, password, role })
             )
                 .unwrap()
             navigate('/')
@@ -115,10 +116,29 @@ const Registration = () => {
                                     </Field>
                                 )}
                             />
+                            <Controller
+                                name="role"
+                                control={control}
+                                render={({ field: { name }, field, fieldState: { invalid, error } }) => (
+                                    <Field>
+                                        <Label htmlFor={name}>Выберите роль</Label>
+                                        <select
+                                            {...field}
+                                            id={name}
+                                            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+                                            aria-invalid={invalid}
+                                        >
+                                            <option value="USER">Пользователь</option>
+                                            <option value="AUTHOR">Автор</option>
+                                        </select>
+                                        {invalid && <FieldError errors={[error]} />}
+                                    </Field>
+                                )}
+                            />
                         </FieldGroup>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit">Войти</Button>
+                        <Button type="submit">Зарегистрироваться</Button>
                     </CardFooter>
                 </form>
             </Card>
