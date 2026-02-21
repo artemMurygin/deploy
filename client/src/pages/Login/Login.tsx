@@ -1,5 +1,5 @@
 import './Login.scss'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAppDispatch } from '@/redux/store.ts';
@@ -98,6 +98,7 @@ const Login = () => {
                     </CardFooter>
                 </form>
             </Card>
+            <NavLink to={'/registration'}>Зарегистрироваться</ NavLink>
         </div>
     )
 }
