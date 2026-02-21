@@ -1,7 +1,7 @@
 networks:
   dev:
 
-sevices:
+services:
   nginx:
     image: nginx:stable-alpine
     ports:
